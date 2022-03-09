@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{arxiv}
 
+\usepackage[colorinlistoftodos]{todonotes}
 \usepackage[utf8]{inputenc}
 \usepackage[english, russian]{babel}
 \usepackage[T1]{fontenc}
@@ -13,10 +14,10 @@
 \usepackage{graphicx}
 \usepackage{natbib}
 \usepackage{doi}
+\usepackage[unicode, pdftex]{hyperref}
+  
 
-
-
-\title{Оценки риска возникновения лесных пожаров методами машинного обучения}
+\title{Wildfires risk assessment using machine learning}
 
 \author{ Zharov Georgii\\
 %%\thanks{Use footnote for providing further
@@ -25,12 +26,12 @@
 MIPT\\
 	\texttt{zharov.g@phystech.edu} \\
 	%% examples of more authors
-	\And
-Юрий Максимов \\
-\\
-\\
-\\
-\\
+% 	\And
+% Юрий Максимов \\
+% \\
+% \\
+% \\
+% \\
 	%% \AND
 	%% Coauthor \\
 	%% Affiliation \\
@@ -65,36 +66,58 @@ pdfkeywords={First keyword, Second keyword, More},
 \maketitle
 
 \begin{abstract}
-В работе рассматривается проблема прогнозирования эксктримальных климатических явлений, а именно лесных пожаров. В качестве цели ставиться предсказание пожаров на основе уже имеющихся данных о явлениях подобного типа методами глубокого обучения. Для краткосрочного прогнозирование исследуются стационарные временные ряды. Для осуществествления долгосрочного прогнозирования исследуются нестационарные временные ряды.
+
+
+
+The paper considers the problem of predicting extreme climatic phenomena, namely forest fires. The goal is to predict fires based on already available data on phenomena of this type using deep learning methods. It is proposed to study the time series for stationarity. Further, for short-term forecasting, stationary time series are studied in more detail. For the implementation of long-term forecasting, non-stationary time series are studied.
 \end{abstract}
 
 
-\keywords{First keyword \and Second keyword \and More}
+\keywords{Time series \and Extreme events}
 
 \section{Introduction}
 
-Прогнозирование экстремальных климатических явлений является важной прикладной задачей, так как природные катаклизмы могут нанести существенный вред многим сферам человеческого хозяйства. Целью данной работы является постороения модели для предсказания появлений лесных пожаров. Для решения поставленной задачи предлагается исследовать поведение временных рядов, стационарных - для прогнозирования явлений в течение временного промежутка порядка $4-5$ лет, и нестационарных - для предсказания в явлений в теничение $40-50$ лет.
 
-Основная сложность в решении задачи прогнозировования экстримальных явлений заключается в том, что эти явления являются случайными и происходят достаточно редко - интервал времени между двумя соседними событиями в рассматриваемом регионе может быть весьма большим. В силу этой особенности исследуеиого явления, при решении задачи мы можем столкнуться с проблемой несбалансированных данных. Эта проблема заключается в следущем. При работе с данными мы вводим определенные пороговые значения для рассмматриваемых признаков, и события, для которых значения признаков превосходят порговые, мы будем считать экстремальными. Так как интересующие нас события происходят достаточно редко, лишь малая часть событий в выборке будут помечены как как экстримальные. Таким образом, большая часть данных будет находится в пределах пороговых значений, а наиболее интересные для нас события будут составлять меньшинство, и выборка будет несбалансированной. Из-за несбалансированности входных данных при обучении модели мы можем столкнуться как с проблемой недообучения, так и с проблемой переобучения, примеры этого приведены в работе $[1]$. 
+Forecasting extreme climatic events is an important applied task, since natural disasters can cause significant harm to many areas of the human economy. The purpose of this work is to build a model for predicting the occurrence of forest fires. To solve the problem, it is proposed to study the behavior of time series, stationary - for predicting phenomena over a time interval of about $4-5$ years, and non-stationary - for predicting phenomena within $40-50$ years.
 
-Основной целью работы является поиск архитектуры, которая будет лучше справлятся с задачей прогнозирования поведения временных рядов и предсказанием экстремальных событий чем уже существующие модели. Классические модели плохо справляются с поставленной задачей. Поэтому для решения предлается использовать архитектуру с элементами рекуррентных нейронных сетей (RNN), способных хранить в памяти информацию о предшествующих событиях.  Также в работе $[1]$ можно найти объснение почему использование квадратиной функии потерь в данной задаче приводит к плохим результатам. Это происходит из-за того большинство часто используемых распределений, например распределение Гаусса или Пуассона, не описывают heavy-tailed данные. Так называются данные, среди которых в малом количестве содержатся события с маленькой веротностью происхождения. В нашей задаче экстремальные события можно интепретировать как такие данные. Для решения этой предлагается добавить к квадратичной функции потерь так называемую Extreme Value Loss (EVL) $[1]$. Такое решение позволяет учитывать  heavy-tailed данные и корректно обучать на них модель. 
+The main difficulty in solving the problem of predicting extreme events is that these events are random and occur quite rarely - the time interval between two neighboring events in the region under consideration can be very large. Due to this feature of the phenomenon under study, when solving the problem, we may encounter the problem of unbalanced data. This problem is as follows. When working with data, we introduce certain threshold values for the features under consideration, and events for which the feature values exceed the threshold values will be considered extreme. Since the events of interest to us occur quite rarely, only a small part of the events in the sample will be labeled as extreme. Thus, most of the data will be within the thresholds, and the most interesting events for us will be in the minority, and the sample will be unbalanced. Due to the imbalance of the input data, when training the model, we may encounter both the problem of underfitting and the problem of overfitting, examples of this are given in $\cite{conf/kdd/DingZP0H19}$.
 
-В качестве основного датасета исползуется информация о лесных пожарах на территории США за предшедтвующие несколько десятков лет  с сервиса Google Earth Data. Также используются данные из Wildfire Risk Database и Severe Weather Dataset. 
+The main goal of the work is to find an architecture that will better cope with the task of predicting the behavior of time series and predicting extreme events than existing models. Classical models do not cope well with the task. Therefore, for the solution, it is proposed to use an architecture with elements of recurrent neural networks (RNNs) capable of storing information about previous events in memory. In work $\cite{conf/kdd/DingZP0H19}$, examples of unsuccessful work of classical models are given, both cases of overfitting and cases of underfitting are demonstrated. Also in the paper $\cite{conf/kdd/DingZP0H19}$ one can find an explanation why the use of a quadratic loss function in this problem leads to bad results. This is because most commonly used distributions, such as the Gaussian or Poisson distribution, do not describe heavy-tailed data. This is the name of the data, among which a small amount contains events with a small probability of origin. In our problem, extreme events can be interpreted as such data. To solve this, it is proposed to add the so-called Extreme Value Loss (EVL) $\cite{conf/kdd/DingZP0H19}$ to the quadratic loss function. This solution allows you to take into account heavy-tailed data and correctly train the model on them. 
 
+As the main dataset, information about forest fires in the United States over the previous several decades from the \href{https://developers.google.com/earth-engine/datasets/catalog/IDAHO_EPSCOR_TERRACLIMATE}{Google Earth Data} service is used. It also uses data from the \href{https://daac.ornl.gov/cgi-bin/theme_dataset_lister.pl?theme_id=8
+}{Wildfire Risk Database} and \href{https://www.visualcrossing.com/weather/weather-data-services}{Severe Weather Dataset}. \href{https://www.visualcrossing.com/weather/weather-data-services}{Severe Weather Dataset}
 
 
 
 \section{Problem statement}
 \label{sec:headings}
 
-В качестве входных данных выступают набор двумерных географических точек $(x_i^1, x_i^2)$, время $t$ и вектор климатических параметров $h$. Предсказание нашей модели для момента времени $o_t$. Выходные данные для момента времени $t$ это $y_t$. $T - $ количество рассматриваемых временных точек. Мы можем взять квадратичную функцию потерь и поставить задачу минимизации следующим образом
+The input data are a set of two-dimensional geographical points $(x_i^1, x_i^2)$, time $t$ and vector of climatic parameters $h$. Our model's prediction for time $o_t$. The output for time $t$ is $y_t$. $T - $ number of time points to consider. We can take the quadratic loss function and pose the minimization problem as follows
 $$\min\sum\limits_{t = 1}^T\|o_t - y_t\|^2$$
 
-Но, как было сказано во введении, такой подход не будет оптимальным. Вместо этого, в соответствии с алгоритмом предложенным в статье $[1]$, мы можем выбрать функцию потерь и поставить задачу оптимизации так 
+But, as mentioned in the introduction, this approach will not be optimal. Instead, in accordance with the algorithm proposed in the article $\cite{conf/kdd/DingZP0H19}$, we can choose a loss function and set the optimization problem as follows 
 
-$$\min\sum\limits_{t = 1}^T(\|o_t - y_t\|^2 + \lambda_1 EVL(w_t, v_t))$$
+$$\min\sum\limits_{t = 1}^T(\|o_t - y_t\|^2 + \lambda_1 EVL(w_t, u_t))$$
 
-где $v_t = \{0, 1\}$ это индикатор, показывающий, считаем ли мы данное собыытие экстремальным или нет, $\lambda_1$ и $w_t$ это параметры.
+where $\lambda_1$ and $w_t$ are parameters. Function $EVL$:
+$$EVL(u_t) = -(1 - P(v_t = 1))[\log G(u_t)]v_t\log(u_t) - (1 - P(v_t = 0))[\log G(1 - u_t)](1 - )v_t\log(1 - u_t) =$$
+$$=\beta_0[1 - \frac{u_t}{\gamma}]^{\gamma}v_t\log(u_t) - beta_1[1 - \frac{1 - u_t}{\gamma}]^{\gamma}(1 - v_t)\log(1 - u_t)$$
+
+where $\beta_0 = P(v_t = 0), \beta_1 = P(v_t = 1)$, $v_t = \{0, 1\}$ it is an indicator showing whether we consider the given event to be extreme or not. 
+$G(y)$ it is the modified distribution:
+
+
+$$G (x) = \left\{
+\begin{array}{ll}
+\exp(-(1 - \frac{1}{\gamma}y)^{\gamma}) & \gamma \neq 0, 1 - \frac{1}{\gamma}y > 0\\
+\exp(-e^{-y}) & \gamma = 0 \\
+\end{array}
+\right. $$
+
+
+
+
+
 
 
 
